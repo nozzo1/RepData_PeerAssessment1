@@ -24,7 +24,8 @@ dataAgg <- aggregate(steps~realDate, dataCsv, sum)
 ## What is mean total number of steps taken per day?
 # 1. Make a histogram of the total number of steps taken each day
 ```r
-hist(dataAgg$steps, xlab="Sum of Steps", breaks = 20, col = "green", main = "Sum of Steps per Day")```
+hist(dataAgg$steps, xlab="Sum of Steps", breaks = 20, col = "green", main = "Sum of Steps per Day")
+```
 # 2. Calculate and report the mean and median total number of steps taken per day
 ```r
 mean(dataAgg$steps)

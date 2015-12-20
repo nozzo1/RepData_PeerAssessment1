@@ -221,10 +221,12 @@ dataAgg &lt;- aggregate(steps~realDate, dataCsv, sum)
 
 <h1>1. Make a histogram of the total number of steps taken each day</h1>
 
-<pre><code class="r">hist(dataAgg$steps, xlab=&quot;Sum of Steps&quot;, breaks = 20, col = &quot;green&quot;, main = &quot;Sum of Steps per Day&quot;)```
-# 2. Calculate and report the mean and median total number of steps taken per day
-```r
-mean(dataAgg$steps)
+<pre><code class="r">hist(dataAgg$steps, xlab=&quot;Sum of Steps&quot;, breaks = 20, col = &quot;green&quot;, main = &quot;Sum of Steps per Day&quot;)
+</code></pre>
+
+<h1>2. Calculate and report the mean and median total number of steps taken per day</h1>
+
+<pre><code class="r">mean(dataAgg$steps)
 median(dataAgg$steps)
 </code></pre>
 
