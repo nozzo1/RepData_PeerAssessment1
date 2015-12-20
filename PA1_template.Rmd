@@ -9,13 +9,17 @@ output:
 ## Loading and preprocessing the data
 # 1. Load the data
 ```{r}
+# standard download and unzip of data archive.
 url <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 download.file(url,"./repdata.zip",mode="wb")
 unzip("./repdata.zip", exdir = ".")
+# dataCsv is where everything starts from
 dataCsv <- read.csv("./activity.csv")
 ```
 # 2. Process/transform the data
 ```{r}
+# Rejig the date column to date format then aggregate
+# step total (sum) per day.
 dataCsv$realDate <- as.Date(dataCsv$date, format='%Y-%m-%d')
 dataAgg <- aggregate(steps~realDate, dataCsv, sum)
 ```
@@ -35,7 +39,6 @@ median(dataAgg$steps)
 ## What is the average daily activity pattern?
 # 1. Make a time series plot
 ```{r}
-
 dataAgg$DayOfWeek <- weekdays(dataAgg$realDate)
 AverageDaily <- tapply(dataCsv$steps, dataCsv$interval, mean, na.rm = TRUE)
 plot(row.names(AverageDaily),
@@ -45,14 +48,11 @@ plot(row.names(AverageDaily),
      xlab = "5-Minute Intervals",
      ylab = "Daily Average",
      type="l")
-
 ```
 # 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 ```{r}
-
 AvgDailyNames <- which.max(AverageDaily)
 names(AvgDailyNames)
-      
 ```
 
 ## Imputing missing values
@@ -66,7 +66,7 @@ print(sum(is.na(dataCsv$steps)))
 
 # 2. Devise a strategy for filling in all of the missing values in the dataset. 
 ```{r}
-
+# use aggregate to get mean steps per interval
 dataCsvMean <- aggregate(steps ~ interval, dataCsv, mean)
 
 head(dataCsvMean)
@@ -75,18 +75,18 @@ head(dataCsvMean)
 
 # 3. Create a new dataset that is equal to the original dataset but with the missing data filled in
 ```{r}
-
+# here we take both the original and mean data and merge them by interval
 mergedDataCsv <- merge(x=dataCsv, y=dataCsvMean, by = "interval")
-
+# finally test for 'NA' and if so substitute the daily mean (the y value) or leave the original in place (the x value)
 mergedDataCsv$steps <- ifelse(is.na(mergedDataCsv$steps.x), mergedDataCsv$steps.y, mergedDataCsv$steps.x) 
-
+# Now take the merged data and output to a clean data frame.
 dataCsvWithoutNA <- mergedDataCsv[c("date","interval","steps")]
 
 ```
 
 #4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 ```{r}
-
+# same previous steps byt we'll use the non-NA data now.
 dataCsvWithoutNA$realDate <- as.Date(dataCsvWithoutNA$date, format='%Y-%m-%d')
 
 dataAggWithoutNA <- aggregate(steps~realDate, dataCsvWithoutNA, sum)
@@ -105,11 +105,16 @@ median(dataAggWithoutNA$steps)
 
 ## Are there differences in activity patterns between weekdays and weekends?
 ```{r}
-
+# create new column DayOfWeek based on the weekdays function
 dataCsvWithoutNA$DayOfWeek <- weekdays(dataCsvWithoutNA$realDate)
+# now we have the weekday name we can use a simple ifelse 
+# statement to state if it is a weekend or weekday and
+# place it in another new column called dayIndicator.
 dataCsvWithoutNA$dayIndicator <- ifelse(dataCsvWithoutNA$DayOfWeek %in% c("Saturday", "Sunday"), "Weekend", "Weekday")
+# convert character to factor if needed
 dataCsvWithoutNA$dayIndicator <- as.factor(dataCsvWithoutNA$dayIndicator)
 
+# do the aggregation mean function then plot the data
 stepsAverageWkendWkday <- aggregate(steps~dayIndicator+interval, data=dataCsvWithoutNA, FUN=mean)
 xyplot(steps ~ interval | dayIndicator, 
        stepsAverageWkendWkday,

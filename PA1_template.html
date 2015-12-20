@@ -205,15 +205,19 @@ hr {
 
 <h1>1. Load the data</h1>
 
-<pre><code class="r">url &lt;- &quot;https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip&quot;
+<pre><code class="r"># standard download and unzip of data archive.
+url &lt;- &quot;https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip&quot;
 download.file(url,&quot;./repdata.zip&quot;,mode=&quot;wb&quot;)
 unzip(&quot;./repdata.zip&quot;, exdir = &quot;.&quot;)
+# dataCsv is where everything starts from
 dataCsv &lt;- read.csv(&quot;./activity.csv&quot;)
 </code></pre>
 
 <h1>2. Process/transform the data</h1>
 
-<pre><code class="r">dataCsv$realDate &lt;- as.Date(dataCsv$date, format=&#39;%Y-%m-%d&#39;)
+<pre><code class="r"># Rejig the date column to date format then aggregate
+# step total (sum) per day.
+dataCsv$realDate &lt;- as.Date(dataCsv$date, format=&#39;%Y-%m-%d&#39;)
 dataAgg &lt;- aggregate(steps~realDate, dataCsv, sum)
 </code></pre>
 
@@ -278,7 +282,8 @@ names(AvgDailyNames)
 
 <h1>2. Devise a strategy for filling in all of the missing values in the dataset.</h1>
 
-<pre><code class="r">dataCsvMean &lt;- aggregate(steps ~ interval, dataCsv, mean)
+<pre><code class="r"># use aggregate to get mean steps per interval
+dataCsvMean &lt;- aggregate(steps ~ interval, dataCsv, mean)
 
 head(dataCsvMean)
 </code></pre>
@@ -294,16 +299,18 @@ head(dataCsvMean)
 
 <h1>3. Create a new dataset that is equal to the original dataset but with the missing data filled in</h1>
 
-<pre><code class="r">mergedDataCsv &lt;- merge(x=dataCsv, y=dataCsvMean, by = &quot;interval&quot;)
-
+<pre><code class="r"># here we take both the original and mean data and merge them by interval
+mergedDataCsv &lt;- merge(x=dataCsv, y=dataCsvMean, by = &quot;interval&quot;)
+# finally test for &#39;NA&#39; and if so substitute the daily mean (the y value) or leave the original in place (the x value)
 mergedDataCsv$steps &lt;- ifelse(is.na(mergedDataCsv$steps.x), mergedDataCsv$steps.y, mergedDataCsv$steps.x) 
-
+# Now take the merged data and output to a clean data frame.
 dataCsvWithoutNA &lt;- mergedDataCsv[c(&quot;date&quot;,&quot;interval&quot;,&quot;steps&quot;)]
 </code></pre>
 
 <p>#4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?</p>
 
-<pre><code class="r">dataCsvWithoutNA$realDate &lt;- as.Date(dataCsvWithoutNA$date, format=&#39;%Y-%m-%d&#39;)
+<pre><code class="r"># same previous steps byt we&#39;ll use the non-NA data now.
+dataCsvWithoutNA$realDate &lt;- as.Date(dataCsvWithoutNA$date, format=&#39;%Y-%m-%d&#39;)
 
 dataAggWithoutNA &lt;- aggregate(steps~realDate, dataCsvWithoutNA, sum)
 
@@ -330,10 +337,16 @@ hist(dataAggWithoutNA$steps,
 
 <h2>Are there differences in activity patterns between weekdays and weekends?</h2>
 
-<pre><code class="r">dataCsvWithoutNA$DayOfWeek &lt;- weekdays(dataCsvWithoutNA$realDate)
+<pre><code class="r"># create new column DayOfWeek based on the weekdays function
+dataCsvWithoutNA$DayOfWeek &lt;- weekdays(dataCsvWithoutNA$realDate)
+# now we have the weekday name we can use a simple ifelse 
+# statement to state if it is a weekend or weekday and
+# place it in another new column called dayIndicator.
 dataCsvWithoutNA$dayIndicator &lt;- ifelse(dataCsvWithoutNA$DayOfWeek %in% c(&quot;Saturday&quot;, &quot;Sunday&quot;), &quot;Weekend&quot;, &quot;Weekday&quot;)
+# convert character to factor if needed
 dataCsvWithoutNA$dayIndicator &lt;- as.factor(dataCsvWithoutNA$dayIndicator)
 
+# do the aggregation mean function then plot the data
 stepsAverageWkendWkday &lt;- aggregate(steps~dayIndicator+interval, data=dataCsvWithoutNA, FUN=mean)
 xyplot(steps ~ interval | dayIndicator, 
        stepsAverageWkendWkday,
