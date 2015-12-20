@@ -65,6 +65,7 @@ print(sum(is.na(dataCsv$steps)))
 ```
 
 # 2. Devise a strategy for filling in all of the missing values in the dataset. 
+The strategy I will use is first get the mean step value then in part 3 use that value to replace the missing data. This way it will not affect the overall mean (but does change median) however for the purpose of this assessment that will be an acceptable tradeoff.
 ```{r}
 # use aggregate to get mean steps per interval
 dataCsvMean <- aggregate(steps ~ interval, dataCsv, mean)
